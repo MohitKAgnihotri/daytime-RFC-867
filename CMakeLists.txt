@@ -4,6 +4,7 @@ project(daytime_RFC_867 C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
+link_libraries(pthread)
 
 add_executable(daytime_RFC_867_Server
         server.c

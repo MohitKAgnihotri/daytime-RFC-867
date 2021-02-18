@@ -1,11 +1,4 @@
-//
-// Created by 310165137 on 12/02/2021.
-//
 
-#include "client.h"
-//
-// Created by 310165137 on 09/02/2021.
-//
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>

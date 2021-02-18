@@ -1,8 +1,3 @@
-//
-// Created by 310165137 on 12/02/2021.
-//
-
-
 #include <netinet/in.h>
 #include <pthread.h>
 #include <signal.h>
@@ -15,6 +10,7 @@
 #include "server.h"
 
 #define BACKLOG 10
+#define PORT_NUM 1313
 
 
 /* Thread routine to serve connection to client. */
@@ -27,25 +23,22 @@ void SetupSignalHandler();
 
 int CreateServerSocket(int port);
 
-
+int server_socket_fd;
 
 int main(int argc, char *argv[])
 {
-    int port, socket_fd, new_socket_fd;
+    int port, new_socket_fd;
     pthread_attr_t pthread_client_attr;
     pthread_t pthread;
     socklen_t client_address_len;
     struct sockaddr_in client_address;
 
-    /* Get port from command line arguments or stdin. */
-    port = argc > 1 ? atoi(argv[1]) : 0;
-    if (!port) {
-        printf("Enter Port: ");
-        scanf("%d", &port);
-    }
+    /* Get port from command line arguments or stdin.
+     * For this server, this is fixed to 1113*/
+    port = PORT_NUM;
 
     /*Create the server socket */
-    socket_fd = CreateServerSocket(port);
+    server_socket_fd = CreateServerSocket(port);
 
     /*Setup the signal handler*/
     SetupSignalHandler();
@@ -64,7 +57,7 @@ int main(int argc, char *argv[])
 
         /* Accept connection to client. */
         client_address_len = sizeof (client_address);
-        new_socket_fd = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_len);
+        new_socket_fd = accept(server_socket_fd, (struct sockaddr *)&client_address, &client_address_len);
         if (new_socket_fd == -1) {
             perror("accept");
             continue;
@@ -135,11 +128,24 @@ void SetupSignalHandler() {/* Assign signal handlers to signals. */
     }
 }
 
-void *pthread_routine(void *arg) {
+void *pthread_routine(void *arg)
+{
+
+    char buff[1024];
+    time_t ticks;
+
+    int client_socket = *(int*) arg;
+    free(arg);
+
+    ticks = time(NULL);
+    snprintf(buff, sizeof(buff), "%.24s\r\n", ctime(&ticks));
+    write(client_socket, buff, strlen(buff));
 
     return NULL;
 }
 
-void signal_handler(int signal_number) {
+void signal_handler(int signal_number)
+{
+    close(server_socket_fd);
     exit(0);
 }
